@@ -19,13 +19,35 @@ Route::get('/', [
    'as' => 'index', 'uses' => 'HomeController@index'
  ]);
 
+Route::get('viewVendor', 'vendorController@index');
+Route::get('viewKetersediaan', 'userController@index');
+Route::get('addTipeLap', 'lapController@index');
+
+Route::get('admin', function()
+{
+	return View::make('admin'); // laravel 5 return View('pages.about');
+});
+
+Route::get('user', function()
+{
+	return View::make('user'); // laravel 5 return View('pages.about');
+});
+
 Route::get('register', [
    'as' => 'register', 'uses' => 'SimpleauthController@register'
  ]);
 
-Route::post('/register', [
-  'as' => 'post-registration', 'uses' => 'SimpleauthController@doRegister'
+Route::post('user-registration', [
+  'as' => 'user-registration', 'uses' => 'SimpleauthController@userRegister'
 ]);
+
+Route::post('vendors-registration', [
+   'as' => 'vendors-registration', 'uses' => 'AdminController@VendorRegister'
+ ]);
+
+Route::post('/admin', [
+   'as' => 'lapangan-registration', 'uses' => 'AdminController@lapanganRegister'
+ ]);
 
 Route::get('/registration/activate/{code}', [
  'as' => 'activate', 'uses' => 'SimpleauthController@activate'
@@ -42,8 +64,3 @@ Route::get('/registration/activate/{code}', [
 Route::get('logout', [
  'as' => 'logout', 'uses' => 'SimpleauthController@logout'
  ]);
-
-
-//Route::get('halaman_utama', 'utamaController@indeks');
-//Route::get('register', 'registerController@indeks');
-//Route::post('register', 'registerController@indeks');

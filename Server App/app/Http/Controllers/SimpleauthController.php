@@ -8,7 +8,11 @@ use App\Http\Controllers\Controller;
 use App\User;
 use Auth;
 use Mail;
+use Redirect;
+use View;
 use App\Http\Requests\LoginRequest;
+use Validator;
+use Input;
 
 class SimpleauthController extends Controller
 {
@@ -16,25 +20,40 @@ class SimpleauthController extends Controller
       return view('registration.registration');
     }
 
-    public function doRegister (RegistrationRequest $request){
+    public function userRegister (RegistrationRequest $request){
+      $rules = array(
+        'name'             => 'required',                      
+        'email'            => 'required',     
+        'password'         => 'required',   
+      );
 
+      $validator = Validator::make(Input::all(), $rules);
+
+        if ($validator->fails()) {
+        // get the error messages from the validator
+        $messages = $validator->messages();
+        // redirect our user back to the form with the errors from the validator
+        return view('registration')
+            ->withErrors($validator);
+       } else {
+      
       $input = $request->all();
       $password = bcrypt($request->input('password'));
       $input['password'] = $password;
       $input['activation_code']=str_random(60).$request->input('email');
       $register = User::create($input);
-
       $data= [
         'name' =>$input['name'],
-        'code' =>$input['activation_code']
+        'activation_code' =>$input['activation_code']
       ];
-      $this->sendEmail($data,$input);
-      return redirect()->route('index');
+      //$this->sendEmail($data,$input);
+      return view('registration.registration')->withSuccess('Pendaftaran Berhasil');;
     }
+  }
 
     public function sendEmail($data,$input){
       Mail::send('emails.register',$data,function($message) use ($input){
-        $message->from('bookingfutsal@gmail.com','RAI');
+        $message->from('ajitrisantoso@gmail.com','RAI');
         $message->to($input['email'],$input['name'])->subject('Please verifiy your account registration!');
       });
     }
@@ -59,8 +78,12 @@ class SimpleauthController extends Controller
          return 'Please activate your account';
        }
        else{
-        if(Auth::check()){
-         return view('landing');
+        if(Auth::user()->role =="user"){
+           $nama = Auth::user()->name;
+          return View('user');
+        }else{
+          $nama = Auth::user()->name;
+          return View::make('admin')->with('nama',$nama);
         }
      }
    }
@@ -75,6 +98,7 @@ class SimpleauthController extends Controller
     Auth::logout();
     return redirect()->route('index');
   }
+
    public function landing()
   {
     return redirect()->route('landing');
